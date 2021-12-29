@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node --prefer-ts-exts bin/cdk-sample-2.ts",
+  "app": "npx ts-node --prefer-ts-exts bin/dynamoDB-CDK-Hands-On-Project.ts",
   "watch": {
     "include": [
       "**"

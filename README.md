@@ -1,6 +1,10 @@
 # Welcome to your CDK TypeScript project!
 
-This is a blank project for TypeScript development with CDK.
+This is a sample project for TypeScript development with CDK.
+
+The purpose of this CDK project is to exemplify and demonstrate the use of the Single Table Design with DynamoDB.
+
+It is explained in the ["AWS Serverless and the DynamoDB Single Table Design - Hands On"](https://dev.to/adrianosastre) article.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
