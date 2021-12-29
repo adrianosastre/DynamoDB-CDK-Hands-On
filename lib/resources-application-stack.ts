@@ -31,6 +31,19 @@ export class ResourcesApplicationStack extends Stack {
       }
     );
 
+    singleTable.addGlobalSecondaryIndex({
+      indexName: 'orderStatusIdx',
+      partitionKey: {
+          name: 'orderStatus',
+          type: dynamodb.AttributeType.STRING
+      },
+      sortKey: {
+          name: 'pk',
+          type: dynamodb.AttributeType.STRING,
+      },
+      projectionType: dynamodb.ProjectionType.ALL
+    });
+
     this.ordersFunction = new lambdaNodeJs.NodejsFunction(
       this,
       "DynamoDB-CDK-Hands-On-Orders-Lambda",

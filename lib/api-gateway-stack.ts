@@ -83,6 +83,7 @@ export class ApiGatewayStack extends Stack {
       .addResource("id")
       .addResource("{id}");
 
+    orderResource.addMethod("GET", ordersFunctionIntegration);
     orderResource.addMethod("PUT", ordersFunctionIntegration);
     orderResource.addMethod("DELETE", ordersFunctionIntegration);
   }
