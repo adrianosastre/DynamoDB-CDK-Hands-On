@@ -27,21 +27,45 @@ export class ResourcesApplicationStack extends Stack {
           type: dynamodb.AttributeType.STRING,
         },
         timeToLiveAttribute: "ttl",
-        billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+        billingMode: dynamodb.BillingMode.PROVISIONED,
+        readCapacity: 3,
+        writeCapacity: 2,
       }
     );
 
     singleTable.addGlobalSecondaryIndex({
-      indexName: 'orderStatusIdx',
+      indexName: "orderStatusIdx",
       partitionKey: {
-          name: 'orderStatus',
-          type: dynamodb.AttributeType.STRING
+        name: "orderStatus",
+        type: dynamodb.AttributeType.STRING,
       },
       sortKey: {
-          name: 'pk',
-          type: dynamodb.AttributeType.STRING,
+        name: "pk",
+        type: dynamodb.AttributeType.STRING,
       },
-      projectionType: dynamodb.ProjectionType.ALL
+      projectionType: dynamodb.ProjectionType.ALL,
+      readCapacity: 1,
+      writeCapacity: 1,
+    });
+
+    const readScaling = singleTable.autoScaleReadCapacity({
+      maxCapacity: 40,
+      minCapacity: 1,
+    });
+    readScaling.scaleOnUtilization({
+        targetUtilizationPercent: 50, // from what % of usage the table starts to react
+        scaleInCooldown: Duration.seconds(30), // time it waits to upscale capacity
+        scaleOutCooldown: Duration.seconds(60), // time it waits to downscale capacity
+    });
+
+    const writeScaling = singleTable.autoScaleWriteCapacity({
+        maxCapacity: 20,
+        minCapacity: 1,
+    });
+    writeScaling.scaleOnUtilization({
+        targetUtilizationPercent: 50,
+        scaleInCooldown: Duration.seconds(15),
+        scaleOutCooldown: Duration.seconds(45),
     });
 
     this.ordersFunction = new lambdaNodeJs.NodejsFunction(
