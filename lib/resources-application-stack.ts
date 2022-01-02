@@ -1,9 +1,8 @@
-import { Stack, StackProps } from "aws-cdk-lib";
-import { Construct } from "constructs";
+import { Duration, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as lambdaNodeJs from "aws-cdk-lib/aws-lambda-nodejs";
-import { RemovalPolicy, Duration } from "aws-cdk-lib";
+import { Construct } from "constructs";
 
 export class ResourcesApplicationStack extends Stack {
   readonly ordersFunction: lambdaNodeJs.NodejsFunction;

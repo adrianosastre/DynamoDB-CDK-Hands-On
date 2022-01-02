@@ -1,8 +1,10 @@
 import { Stack, StackProps } from "aws-cdk-lib";
-import { Construct } from "constructs";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as lambdaNodeJs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as awsLogs from "aws-cdk-lib/aws-logs";
+import { Construct } from "constructs";
+import { OrderModel } from "./models/OrderModel";
+import { UserModel } from "./models/UserModel";
 
 export class ApiGatewayStack extends Stack {
   constructor(
@@ -37,6 +39,25 @@ export class ApiGatewayStack extends Stack {
       },
     });
 
+    api.addGatewayResponse("ApiBadRequestBodyGtwResponse", {
+      type: apigateway.ResponseType.BAD_REQUEST_BODY,
+      templates: {
+        "application/json":
+          '{"message": "$context.error.validationErrorString"}',
+      },
+    });
+
+    const apiRequestValidator = new apigateway.RequestValidator(
+      this,
+      "ApiRequestValidator",
+      {
+        restApi: api,
+        requestValidatorName: "ApiRequestValidator",
+        validateRequestBody: true,
+        validateRequestParameters: true,
+      }
+    );
+
     const usersFunctionIntegration = new apigateway.LambdaIntegration(
       usersFunction,
       {
@@ -54,8 +75,18 @@ export class ApiGatewayStack extends Stack {
       .addResource("{username}");
 
     userResource.addMethod("GET", usersFunctionIntegration);
-    userResource.addMethod("POST", usersFunctionIntegration);
-    userResource.addMethod("PUT", usersFunctionIntegration);
+    userResource.addMethod("POST", usersFunctionIntegration, {
+      requestModels: {
+        "application/json": new UserModel(this, "UserModelPost", api),
+      },
+      requestValidator: apiRequestValidator,
+    });
+    userResource.addMethod("PUT", usersFunctionIntegration, {
+      requestModels: {
+        "application/json": new UserModel(this, "UserModelPut", api),
+      },
+      requestValidator: apiRequestValidator,
+    });
     userResource.addMethod("DELETE", usersFunctionIntegration);
 
     const ordersFunctionIntegration = new apigateway.LambdaIntegration(
@@ -72,7 +103,12 @@ export class ApiGatewayStack extends Stack {
       .addResource("username")
       .addResource("{username}");
     ordersUsersResource.addMethod("GET", ordersFunctionIntegration);
-    ordersUsersResource.addMethod("POST", ordersFunctionIntegration);
+    ordersUsersResource.addMethod("POST", ordersFunctionIntegration, {
+      requestModels: {
+        "application/json": new OrderModel(this, "OrderModelPost", api),
+      },
+      requestValidator: apiRequestValidator,
+    });
 
     const ordersUsersStatusResource = ordersUsersResource
       .addResource("status")
@@ -84,7 +120,12 @@ export class ApiGatewayStack extends Stack {
       .addResource("{id}");
 
     orderResource.addMethod("GET", ordersFunctionIntegration);
-    orderResource.addMethod("PUT", ordersFunctionIntegration);
+    orderResource.addMethod("PUT", ordersFunctionIntegration, {
+      requestModels: {
+        "application/json": new OrderModel(this, "OrderModelPut", api),
+      },
+      requestValidator: apiRequestValidator,
+    });
     orderResource.addMethod("DELETE", ordersFunctionIntegration);
   }
 }
